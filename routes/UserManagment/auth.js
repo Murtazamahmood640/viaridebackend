@@ -7,9 +7,11 @@ const generateOTP = () => Math.floor(100000 + Math.random() * 900000);
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "syedmunawarali906@gmail.com", 
-    pass: "tsdo zpys wyoc lykh",
-  },});
+    user: process.env.GMAIL_USER, // your email
+    pass: process.env.GMAIL_PASS, // your password
+  },
+});
+
 
 router.post("/createuser", async (req, res) => {
   try {

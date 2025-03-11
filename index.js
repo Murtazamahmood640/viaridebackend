@@ -39,7 +39,8 @@ const allDriver = require('./routes/Driver/allDrivers');
 const driverRequest = require('./routes/Driver/driverRequest');
 const trips = require('./routes/Trips/trips');
 const userDriver = require('./routes/UserManagment/userDriver');
-
+const vehicleAvailibility = require('./routes/VehicleManagment/VehicleAvailability')
+const vehicleDetails = require('./routes/VehicleManagment/VehicleDetails')
 // Middleware to parse JSON
 app.use(express.json());
 
@@ -58,6 +59,8 @@ app.use("/api/viaRide", vehicle);
 app.use("/api/viaRide", allDriver);
 app.use("/api/viaRide", driverRequest);
 app.use("/api/viaRide", trips);
+app.use("/api/viaRide", vehicleAvailibility);
+app.use("/api/viaRide", vehicleDetails);
 
 // Start the server
 const PORT = process.env.PORT || 1000;

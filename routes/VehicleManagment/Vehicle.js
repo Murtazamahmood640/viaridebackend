@@ -25,9 +25,9 @@ router.get("/vehicle-get-values/:id", async (req, res) => {
 router.put("/vehicle-put-values/:id", async (req, res) => {
     try {
         const { id } = req.params;
-    const {make , carType , color , year , owner , licensePlateNo , feul} = req.body;
+    const {make , carType , color , year , licensePlateNo , feul} = req.body;
     const vehicle = await Vehicle.findByIdAndUpdate(
-        id,{make , carType , color , year , owner , licensePlateNo , feul} ,{ new: true }
+        id,{make , carType , color , year  , licensePlateNo , feul} ,{ new: true }
     )
     if(!vehicle){
         return res.status(404).json({error : "Vehicle not found" })
