@@ -155,6 +155,9 @@ router.post("/signin", async (req, res) => {
         res.status(200).json({
           message: "OTP sent to your email",
           email: user.email,
+          name: user.name,
+      id: user._id,
+      role : user.role,
           otpGeneratedAt: currentTime.toISOString(),
           otpExpiresAt: otpExpires.toISOString(),
         });
