@@ -138,7 +138,7 @@ router.post("/signin", async (req, res) => {
 
     // Send OTP via email
     const mailOptions = {
-      from: GMAIL_USER,
+      from: "syedmunawarali906@gmail.com",
       to: user.email,
       subject: "Your OTP Code",
       text: `Your OTP for login is: ${otp}. It was generated at ${currentTime.toLocaleString()} and is valid for 1 minute.`,
