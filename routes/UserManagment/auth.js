@@ -113,6 +113,7 @@ router.delete("/createuser/:id", async (req, res) => {
     }
 });
 
+// In /signin route where OTP is generated and sent
 router.post("/signin", async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -120,61 +121,67 @@ router.post("/signin", async (req, res) => {
     if (!user) {
       return res.status(400).json({ message: "Please Sign Up first!" });
     }
+
     const isPasswordCorrect = bcrypt.compareSync(password, user.password);
     if (!isPasswordCorrect) {
       return res.status(400).json({ message: "Invalid Password" });
     }
-    const currentTime = new Date();
-    console.log("Current system time:", currentTime);
+
     const otp = generateOTP();
-    const otpExpires = new Date(currentTime.getTime() + 1 * 60 * 1000); 
+    const currentTime = new Date();
+    const otpExpires = new Date(currentTime.getTime() + 1 * 60 * 1000);  // OTP expires in 1 minute
+
     user.otp = otp;
     user.otpGeneratedAt = currentTime;
     user.otpExpires = otpExpires;
     await user.save();
-    console.log(`OTP ${otp} generated at ${currentTime} and expires at ${otpExpires}`);
+
+    // Send OTP via email
     const mailOptions = {
-      from: "syedmunawarali906@gmail.com",
+      from: GMAIL_USER,
       to: user.email,
       subject: "Your OTP Code",
       text: `Your OTP for login is: ${otp}. It was generated at ${currentTime.toLocaleString()} and is valid for 1 minute.`,
     };
-    transporter.sendMail(mailOptions, (error, info) => {
+
+    transporter.sendMail(mailOptions, async (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
         return res.status(500).json({ message: "Error sending OTP email" });
       } else {
         console.log("Email sent: " + info.response);
+
+        // Respond only after sending email
+        res.status(200).json({
+          message: "OTP sent to your email",
+          email: user.email,
+          otpGeneratedAt: currentTime.toISOString(),
+          otpExpiresAt: otpExpires.toISOString(),
+        });
+
+        // Set a timeout to delete OTP after expiration
+        setTimeout(async () => {
+          try {
+            const updatedUser = await User.findOne({ email });
+            if (updatedUser && String(updatedUser.otp) === String(otp)) {
+              await User.findOneAndUpdate(
+                { email },
+                { $unset: { otp: 1, otpExpires: 1, otpGeneratedAt: 1 } }
+              );
+              console.log(`OTP for ${email} deleted at ${new Date().toLocaleString()}`);
+            }
+          } catch (err) {
+            console.error("Error deleting OTP:", err);
+          }
+        }, 60 * 1000); // Delete OTP after 1 minute
       }
-    });
-    setTimeout(async () => {
-      try {
-        const updatedUser = await User.findOne({ email });
-        if (updatedUser && String(updatedUser.otp) === String(otp)) {
-          await User.findOneAndUpdate(
-            { email },
-            { $unset: { otp: 1, otpExpires: 1, otpGeneratedAt: 1 } }
-          );
-          console.log(`OTP for ${email} deleted at ${new Date().toLocaleString()}`);
-        }
-      } catch (err) {
-        console.error("Error deleting OTP:", err);
-      }
-    }, 60 * 1000);
-    res.status(200).json({
-      message: "OTP sent to your email",
-      email: user.email,
-      name: user.name,
-      id: user._id,
-      role : user.role,
-      otpGeneratedAt: currentTime.toISOString(),
-      otpExpiresAt: otpExpires.toISOString(),
     });
   } catch (error) {
     console.error("Signin Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
 });
+
 
 router.post("/verify-otp", async (req, res) => {
   try {
