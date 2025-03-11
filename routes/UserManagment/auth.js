@@ -218,7 +218,7 @@ router.post("/resend-otp", async (req, res) => {
     // Generate a new OTP
     const otp = generateOTP();
     const currentTime = new Date();
-    const otpExpires = new Date(currentTime.getTime() + 1 * 60 * 1000); // OTP expires in 1 minute
+    const otpExpires = new Date(currentTime.getTime() + 10 * 60 * 1000); // OTP expires in 1 minute
 
     user.otp = otp;
     user.otpGeneratedAt = currentTime;
